@@ -186,16 +186,16 @@ Matrix getIdentityMatrix(){
 
 int main()
 {
-    freopen("scene.txt", "r", stdin);
-    freopen("stage1.txt", "w", stdout);
+    ifstream in("scene.txt");
+    ofstream out("stage1.txt");
 
     Point eye, look, up;
     double fovY, aspectRatio, near, far;
 
-    cin >> eye.x >> eye.y >> eye.z;
-    cin >> look.x >> look.y >> look.z;
-    cin >> up.x >> up.y >> up.z;
-    cin >> fovY >> aspectRatio >> near >> far;
+    in >> eye.x >> eye.y >> eye.z;
+    in >> look.x >> look.y >> look.z;
+    in >> up.x >> up.y >> up.z;
+    in >> fovY >> aspectRatio >> near >> far;
 
     Matrix m;
     m.setIdentityMatrix();
@@ -203,21 +203,21 @@ int main()
     s.push(m);
     string command;
 
-    while(cin >> command){
+    while(in >> command){
         if(command == "triangle"){
             Point a, b, c;
-            cin >> a.x >> a.y >> a.z;
-            cin >> b.x >> b.y >> b.z;
-            cin >> c.x >> c.y >> c.z;
+            in >> a.x >> a.y >> a.z;
+            in >> b.x >> b.y >> b.z;
+            in >> c.x >> c.y >> c.z;
             a.n = b.n = c.n = 1;
             a = multiplyMatrixWithPoint(s.top(), a);
             b = multiplyMatrixWithPoint(s.top(), b);
             c = multiplyMatrixWithPoint(s.top(), c);
-            cout << setprecision(7) << fixed << a.x << " " << a.y << " " << a.z << "\n" << b.x << " " << b.y << " " << b.z << "\n" << c.x << " " << c.y << " " << c.z << endl << endl;
+            out << setprecision(7) << fixed << a.x << " " << a.y << " " << a.z << "\n" << b.x << " " << b.y << " " << b.z << "\n" << c.x << " " << c.y << " " << c.z << endl << endl;
         }
         else if(command == "translate"){
             Point p;
-            cin >> p.x >> p.y >> p.z;
+            in >> p.x >> p.y >> p.z;
             Matrix m;
             m.setIdentityMatrix();
             m.translate(p);
@@ -225,7 +225,7 @@ int main()
         }
         else if(command == "scale"){
             Point p;
-            cin >> p.x >> p.y >> p.z;
+            in >> p.x >> p.y >> p.z;
             Matrix m;
             m.setIdentityMatrix();
             m.scale(p);
@@ -234,7 +234,7 @@ int main()
         else if(command == "rotate"){
             double angle;
             Point axis;
-            cin >> angle >> axis.x >> axis.y >> axis.z;
+            in >> angle >> axis.x >> axis.y >> axis.z;
             Matrix m;
             m.setIdentityMatrix();
             m.rotate(angle, axis);
@@ -250,5 +250,54 @@ int main()
             break;
         }
     }
+
+    in.close();
+    out.close();
+
+    in.open("stage1.txt");
+    out.open("stage2.txt");
+    Point l, r, u;
+
+    l = subtractTwoPoints(look, eye);
+    l = normalizePoint(l);
+
+    r = crossProduct(l, up);
+    r = normalizePoint(r);
+
+    u = crossProduct(r, l);
+    u = normalizePoint(u);
+
+    Matrix t;
+    t.setIdentityMatrix();
+    Point eyeNeg = multiplyPointWithScalar(eye, -1);
+    t.translate(eyeNeg);
+
+    Matrix r1;
+    r1.setIdentityMatrix();
+    r1.mat[0][0] = r.x;
+    r1.mat[0][1] = r.y;
+    r1.mat[0][2] = r.z;
+    r1.mat[1][0] = u.x;
+    r1.mat[1][1] = u.y;
+    r1.mat[1][2] = u.z;
+    r1.mat[2][0] = -l.x;
+    r1.mat[2][1] = -l.y;
+    r1.mat[2][2] = -l.z;
+
+    Matrix v = multiplyTwoMatrix(r1, t);
+    Point a1, b1, c1;
+
+    while(in >> a1.x){
+        in >> a1.y >> a1.z >> b1.x >> b1.y >> b1.z >> c1.x >> c1.y >> c1.z;
+        a1.n = b1.n = c1.n = 1;
+        a1 = multiplyMatrixWithPoint(v, a1);
+        b1 = multiplyMatrixWithPoint(v, b1);
+        c1 = multiplyMatrixWithPoint(v, c1);
+        out << setprecision(7) << fixed << a1.x << " " << a1.y << " " << a1.z << "\n" << b1.x << " " << b1.y << " " << b1.z << "\n" << c1.x << " " << c1.y << " " << c1.z << endl << endl;
+    }
+
+    in.close();
+    out.close();
+    
     return 0;
 }
