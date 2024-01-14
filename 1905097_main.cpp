@@ -174,6 +174,10 @@ Point multiplyMatrixWithPoint(Matrix m, Point p){
     c.y = m.mat[1][0] * p.x + m.mat[1][1] * p.y + m.mat[1][2] * p.z + m.mat[1][3] * p.n;
     c.z = m.mat[2][0] * p.x + m.mat[2][1] * p.y + m.mat[2][2] * p.z + m.mat[2][3] * p.n;
     c.n = m.mat[3][0] * p.x + m.mat[3][1] * p.y + m.mat[3][2] * p.z + m.mat[3][3] * p.n;
+    c.x = c.x / c.n;
+    c.y = c.y / c.n;
+    c.z = c.z / c.n;
+    c.n = 1;
     return c;
 }
 
@@ -298,6 +302,36 @@ int main()
 
     in.close();
     out.close();
-    
+
+    in.open("stage2.txt");
+    out.open("stage3.txt");
+
+    double fovX = fovY * aspectRatio;
+    fovX = fovX * acos(-1) / 180.0;
+    fovY = fovY * acos(-1) / 180.0;
+    double t1 = near * tan(fovY / 2);
+    double r2 = near * tan(fovX / 2);
+
+    Matrix p;
+    p.mat[0][0] = near / r2;
+    p.mat[1][1] = near / t1;
+    p.mat[2][2] = -(far + near) / (far - near);
+    p.mat[2][3] = -(2.0 * far * near) / (far - near);
+    p.mat[3][2] = -1.0;
+
+    Point a2, b2, c2;
+
+    while(in >> a2.x){
+        in >> a2.y >> a2.z >> b2.x >> b2.y >> b2.z >> c2.x >> c2.y >> c2.z;
+        a2.n = b2.n = c2.n = 1;
+        a2 = multiplyMatrixWithPoint(p, a2);
+        b2 = multiplyMatrixWithPoint(p, b2);
+        c2 = multiplyMatrixWithPoint(p, c2);
+        out << setprecision(7) << fixed << a2.x << " " << a2.y << " " << a2.z << "\n" << b2.x << " " << b2.y << " " << b2.z << "\n" << c2.x << " " << c2.y << " " << c2.z << endl << endl;
+    }
+
+    in.close();
+    out.close();
+
     return 0;
 }
