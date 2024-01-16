@@ -27,39 +27,24 @@ struct Point{
 };
 
 Point addTwoPoints(Point a, Point b){
-    Point c;
-    c.x = a.x + b.x;
-    c.y = a.y + b.y;
-    c.z = a.z + b.z;
-    return c;
+    return Point(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Point subtractTwoPoints(Point a, Point b){
-    Point c;
-    c.x = a.x - b.x;
-    c.y = a.y - b.y;
-    c.z = a.z - b.z;
-    return c;
+    return Point(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 Point multiplyPointWithScalar(Point a, double s){
-    Point c;
-    c.x = a.x * s;
-    c.y = a.y * s;
-    c.z = a.z * s;
-    return c;
+    return Point(a.x * s, a.y * s, a.z * s);
 }
 
 Point dividePointWithScalar(Point a, double s){
-    Point c;
-    c.x = a.x / s;
-    c.y = a.y / s;
-    c.z = a.z / s;
-    return c;
+    return Point(a.x / s, a.y / s, a.z / s);
 }
 
 double dotProduct(Point a, Point b){
-    return a.x * b.x + a.y * b.y + a.z * b.z;
+    double res = a.x * b.x + a.y * b.y + a.z * b.z;
+    return res;
 }
 
 Point crossProduct(Point a, Point b){
@@ -72,11 +57,7 @@ Point crossProduct(Point a, Point b){
 
 Point normalizePoint(Point a){
     double length = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-    Point c;
-    c.x = a.x / length;
-    c.y = a.y / length;
-    c.z = a.z / length;
-    return c;
+    return Point(a.x / length, a.y / length, a.z / length);
 }
 
 struct Triangle{
@@ -96,45 +77,51 @@ struct Triangle{
 };
 
 struct Matrix{
-    double mat[4][4];
+    double matrix[4][4];
 
     Matrix(){
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++)
-                mat[i][j] = 0;
+                matrix[i][j] = 0;
         }
     }
 
     Matrix(const Matrix &m){
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++)
-                mat[i][j] = m.mat[i][j];
+                matrix[i][j] = m.matrix[i][j];
         }
     }
 
     void print(){
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++)
-                cout << mat[i][j] << " ";
+                cout << matrix[i][j] << " ";
             cout << endl;
         }
     }
 
     void setIdentityMatrix(){
-        for(int i = 0; i < 4; i++)
-            mat[i][i] = 1;
+        for(int i = 0; i < 4; i++){
+            for(int j = 0; j < 4; j++){
+                if(i == j)
+                    matrix[i][j] = 1;
+                else
+                    matrix[i][j] = 0;
+            }    
+        }
     }
 
     void translate(Point p){
-        mat[0][3] = p.x;
-        mat[1][3] = p.y;
-        mat[2][3] = p.z;
+        matrix[0][3] = p.x;
+        matrix[1][3] = p.y;
+        matrix[2][3] = p.z;
     }
 
     void scale(Point p){
-        mat[0][0] = p.x;
-        mat[1][1] = p.y;
-        mat[2][2] = p.z;
+        matrix[0][0] = p.x;
+        matrix[1][1] = p.y;
+        matrix[2][2] = p.z;
     }
 
     void rotate(double angle, Point axis){
@@ -142,50 +129,57 @@ struct Matrix{
         double c = cos(angle);
         double s = sin(angle);
         double t = 1 - c;
+
         axis = normalizePoint(axis);
         setIdentityMatrix();
-        mat[0][0] = t * axis.x * axis.x + c;
-        mat[0][1] = t * axis.x * axis.y - s * axis.z;
-        mat[0][2] = t * axis.x * axis.z + s * axis.y;
-        mat[1][0] = t * axis.x * axis.y + s * axis.z;
-        mat[1][1] = t * axis.y * axis.y + c;
-        mat[1][2] = t * axis.y * axis.z - s * axis.x;
-        mat[2][0] = t * axis.x * axis.z - s * axis.y;
-        mat[2][1] = t * axis.y * axis.z + s * axis.x;
-        mat[2][2] = t * axis.z * axis.z + c;
+
+        matrix[0][0] = t * axis.x * axis.x + c;
+        matrix[0][1] = t * axis.x * axis.y - s * axis.z;
+        matrix[0][2] = t * axis.x * axis.z + s * axis.y;
+        matrix[1][0] = t * axis.x * axis.y + s * axis.z;
+        matrix[1][1] = t * axis.y * axis.y + c;
+        matrix[1][2] = t * axis.y * axis.z - s * axis.x;
+        matrix[2][0] = t * axis.x * axis.z - s * axis.y;
+        matrix[2][1] = t * axis.y * axis.z + s * axis.x;
+        matrix[2][2] = t * axis.z * axis.z + c;
     }
 };
 
 Matrix multiplyTwoMatrix(Matrix a, Matrix b){
-    Matrix c;
+    Matrix m;
+
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
-            c.mat[i][j] = 0;
+            m.matrix[i][j] = 0;
             for(int k = 0; k < 4; k++)
-                c.mat[i][j] += a.mat[i][k] * b.mat[k][j];
+                m.matrix[i][j] += a.matrix[i][k] * b.matrix[k][j];
         }
     }
-    return c;
+    return m;
 }
 
 Point multiplyMatrixWithPoint(Matrix m, Point p){
-    Point c;
-    c.x = m.mat[0][0] * p.x + m.mat[0][1] * p.y + m.mat[0][2] * p.z + m.mat[0][3] * p.n;
-    c.y = m.mat[1][0] * p.x + m.mat[1][1] * p.y + m.mat[1][2] * p.z + m.mat[1][3] * p.n;
-    c.z = m.mat[2][0] * p.x + m.mat[2][1] * p.y + m.mat[2][2] * p.z + m.mat[2][3] * p.n;
-    c.n = m.mat[3][0] * p.x + m.mat[3][1] * p.y + m.mat[3][2] * p.z + m.mat[3][3] * p.n;
-    c.x = c.x / c.n;
-    c.y = c.y / c.n;
-    c.z = c.z / c.n;
-    c.n = 1;
-    return c;
+    Point p1;
+    p1.x = m.matrix[0][0] * p.x + m.matrix[0][1] * p.y + m.matrix[0][2] * p.z + m.matrix[0][3] * p.n;
+    p1.y = m.matrix[1][0] * p.x + m.matrix[1][1] * p.y + m.matrix[1][2] * p.z + m.matrix[1][3] * p.n;
+    p1.z = m.matrix[2][0] * p.x + m.matrix[2][1] * p.y + m.matrix[2][2] * p.z + m.matrix[2][3] * p.n;
+    p1.n = m.matrix[3][0] * p.x + m.matrix[3][1] * p.y + m.matrix[3][2] * p.z + m.matrix[3][3] * p.n;
+    return Point(p1.x / p1.n, p1.y / p1.n, p1.z / p1.n);
+}
+
+Triangle multiplyMatrixWithTriangle(Matrix m, Triangle t){
+    Triangle t1;
+    t1.a = multiplyMatrixWithPoint(m, t.a);
+    t1.b = multiplyMatrixWithPoint(m, t.b);
+    t1.c = multiplyMatrixWithPoint(m, t.c);
+    return t1;
 }
 
 Matrix getIdentityMatrix(){
-    Matrix c;
+    Matrix m;
     for(int i = 0; i < 4; i++)
-        c.mat[i][i] = 1;
-    return c;
+        m.matrix[i][i] = 1;
+    return m;
 }
 
 int main()
@@ -201,58 +195,61 @@ int main()
     in >> up.x >> up.y >> up.z;
     in >> fovY >> aspectRatio >> near >> far;
 
-    Matrix m;
-    m.setIdentityMatrix();
-    stack<Matrix> s;
-    s.push(m);
+    Matrix mat;
+    mat.setIdentityMatrix();
+    stack<Matrix> st;
+    st.push(mat);
     string command;
+    Point a, b, c;
 
     while(in >> command){
+
         if(command == "triangle"){
-            Point a, b, c;
             in >> a.x >> a.y >> a.z;
             in >> b.x >> b.y >> b.z;
             in >> c.x >> c.y >> c.z;
-            a.n = b.n = c.n = 1;
-            a = multiplyMatrixWithPoint(s.top(), a);
-            b = multiplyMatrixWithPoint(s.top(), b);
-            c = multiplyMatrixWithPoint(s.top(), c);
-            out << setprecision(7) << fixed << a.x << " " << a.y << " " << a.z << "\n" << b.x << " " << b.y << " " << b.z << "\n" << c.x << " " << c.y << " " << c.z << endl << endl;
+            Triangle triangle(a, b, c);
+            triangle = multiplyMatrixWithTriangle(st.top(), triangle);
+            out << setprecision(7) << fixed << triangle.a.x << " " << triangle.a.y << " " << triangle.a.z << "\n" << triangle.b.x << " " << triangle.b.y << " " << triangle.b.z << "\n" << triangle.c.x << " " << triangle.c.y << " " << triangle.c.z << endl << endl;
         }
+
         else if(command == "translate"){
             Point p;
             in >> p.x >> p.y >> p.z;
-            Matrix m;
-            m.setIdentityMatrix();
-            m.translate(p);
-            s.top() = multiplyTwoMatrix(s.top(), m);
+            mat.setIdentityMatrix();
+            mat.translate(p);
+            st.top() = multiplyTwoMatrix(st.top(), mat);
         }
+
         else if(command == "scale"){
             Point p;
             in >> p.x >> p.y >> p.z;
-            Matrix m;
-            m.setIdentityMatrix();
-            m.scale(p);
-            s.top() = multiplyTwoMatrix(s.top(), m);
+            mat.setIdentityMatrix();
+            mat.scale(p);
+            st.top() = multiplyTwoMatrix(st.top(), mat);
         }
+
         else if(command == "rotate"){
             double angle;
             Point axis;
             in >> angle >> axis.x >> axis.y >> axis.z;
-            Matrix m;
-            m.setIdentityMatrix();
-            m.rotate(angle, axis);
-            s.top() = multiplyTwoMatrix(s.top(), m);
+            mat.setIdentityMatrix();
+            mat.rotate(angle, axis);
+            st.top() = multiplyTwoMatrix(st.top(), mat);
         }
+
         else if(command == "push"){
-            s.push(s.top());
+            st.push(st.top());
         }
+
         else if(command == "pop"){
-            s.pop();
+            st.pop();
         }
+
         else if(command == "end"){
             break;
         }
+
     }
 
     in.close();
@@ -271,33 +268,30 @@ int main()
     u = crossProduct(r, l);
     u = normalizePoint(u);
 
-    Matrix t;
-    t.setIdentityMatrix();
+    Matrix transformMatrix;
+    transformMatrix.setIdentityMatrix();
     Point eyeNeg = multiplyPointWithScalar(eye, -1);
-    t.translate(eyeNeg);
+    transformMatrix.translate(eyeNeg);
 
-    Matrix r1;
-    r1.setIdentityMatrix();
-    r1.mat[0][0] = r.x;
-    r1.mat[0][1] = r.y;
-    r1.mat[0][2] = r.z;
-    r1.mat[1][0] = u.x;
-    r1.mat[1][1] = u.y;
-    r1.mat[1][2] = u.z;
-    r1.mat[2][0] = -l.x;
-    r1.mat[2][1] = -l.y;
-    r1.mat[2][2] = -l.z;
+    Matrix R;
+    R.setIdentityMatrix();
+    R.matrix[0][0] = r.x;
+    R.matrix[0][1] = r.y;
+    R.matrix[0][2] = r.z;
+    R.matrix[1][0] = u.x;
+    R.matrix[1][1] = u.y;
+    R.matrix[1][2] = u.z;
+    R.matrix[2][0] = -l.x;
+    R.matrix[2][1] = -l.y;
+    R.matrix[2][2] = -l.z;
 
-    Matrix v = multiplyTwoMatrix(r1, t);
-    Point a1, b1, c1;
+    Matrix v = multiplyTwoMatrix(R, transformMatrix);
 
-    while(in >> a1.x){
-        in >> a1.y >> a1.z >> b1.x >> b1.y >> b1.z >> c1.x >> c1.y >> c1.z;
-        a1.n = b1.n = c1.n = 1;
-        a1 = multiplyMatrixWithPoint(v, a1);
-        b1 = multiplyMatrixWithPoint(v, b1);
-        c1 = multiplyMatrixWithPoint(v, c1);
-        out << setprecision(7) << fixed << a1.x << " " << a1.y << " " << a1.z << "\n" << b1.x << " " << b1.y << " " << b1.z << "\n" << c1.x << " " << c1.y << " " << c1.z << endl << endl;
+    while(in >> a.x){
+        in >> a.y >> a.z >> b.x >> b.y >> b.z >> c.x >> c.y >> c.z;
+        Triangle triangle(a, b, c);
+        triangle = multiplyMatrixWithTriangle(v, triangle);
+        out << setprecision(7) << fixed << triangle.a.x << " " << triangle.a.y << " " << triangle.a.z << "\n" << triangle.b.x << " " << triangle.b.y << " " << triangle.b.z << "\n" << triangle.c.x << " " << triangle.c.y << " " << triangle.c.z << endl << endl;
     }
 
     in.close();
@@ -312,22 +306,18 @@ int main()
     double t1 = near * tan(fovY / 2);
     double r2 = near * tan(fovX / 2);
 
-    Matrix p;
-    p.mat[0][0] = near / r2;
-    p.mat[1][1] = near / t1;
-    p.mat[2][2] = -(far + near) / (far - near);
-    p.mat[2][3] = -(2.0 * far * near) / (far - near);
-    p.mat[3][2] = -1.0;
+    Matrix projectionMatrix;
+    projectionMatrix.matrix[0][0] = near / r2;
+    projectionMatrix.matrix[1][1] = near / t1;
+    projectionMatrix.matrix[2][2] = -(far + near) / (far - near);
+    projectionMatrix.matrix[2][3] = -(2.0 * far * near) / (far - near);
+    projectionMatrix.matrix[3][2] = -1.0;
 
-    Point a2, b2, c2;
-
-    while(in >> a2.x){
-        in >> a2.y >> a2.z >> b2.x >> b2.y >> b2.z >> c2.x >> c2.y >> c2.z;
-        a2.n = b2.n = c2.n = 1;
-        a2 = multiplyMatrixWithPoint(p, a2);
-        b2 = multiplyMatrixWithPoint(p, b2);
-        c2 = multiplyMatrixWithPoint(p, c2);
-        out << setprecision(7) << fixed << a2.x << " " << a2.y << " " << a2.z << "\n" << b2.x << " " << b2.y << " " << b2.z << "\n" << c2.x << " " << c2.y << " " << c2.z << endl << endl;
+    while(in >> a.x){
+        in >> a.y >> a.z >> b.x >> b.y >> b.z >> c.x >> c.y >> c.z;
+        Triangle triangle(a, b, c);
+        triangle = multiplyMatrixWithTriangle(projectionMatrix, triangle);
+        out << setprecision(7) << fixed << triangle.a.x << " " << triangle.a.y << " " << triangle.a.z << "\n" << triangle.b.x << " " << triangle.b.y << " " << triangle.b.z << "\n" << triangle.c.x << " " << triangle.c.y << " " << triangle.c.z << endl << endl;
     }
 
     in.close();
