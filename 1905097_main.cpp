@@ -501,6 +501,11 @@ int main()
             double xMin = max(p1.x, leftX);
             double xMax = min(p2.x, rightX);
 
+            // If the points are parallel to x axis, continue
+            if(xMin == xMax){
+               continue; 
+            }
+
             // Calculate the left and right column  
             int leftColumn = (int)round((xMin - leftPixelX) / dx);
             int rightColumn = (int)round((xMax - leftPixelX) / dx);
@@ -508,9 +513,7 @@ int main()
             // Calculate the z value of each pixel and update the z buffer
             for(int colNo = leftColumn; colNo <= rightColumn; colNo++){
                 double xVal = leftPixelX + colNo * dx;
-                double zVal = p2.z;
-                if(p1.x != p2.x)
-                    zVal += (p1.z - p2.z) * (p2.x - xVal) / (p2.x - p1.x);
+                double zVal = p2.z + (p1.z - p2.z) * (p2.x - xVal) / (p2.x - p1.x);
 
                 if(zVal < zBuffer[rowNo][colNo] && zVal > zMin){
                     zBuffer[rowNo][colNo] = zVal;
